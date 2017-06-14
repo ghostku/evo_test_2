@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<script>
+    function show_http_error(err_obj){
+        header = err_obj.statusText
+        text = err_obj.responseText;
+        text = text.match(/<p>(.*)<\/p>/)[1];
+        alert(header + '\n' + text);
+    }
+
+    function update() {
+        $.when(
+			$.getJSON($SCRIPT_ROOT + '/persons/list', null)
+			)
+			.then(show_persons);
+    }
+
+	function add_person(event) {
+		event.preventDefault();
+
+		$.ajax({
+			'url': $(this).attr('action'),
+			'data': $(this).serialize(),
+			'method': 'post',
+			'success': function() {
+            	console.log('Added OK');
+            	update();
+            	},
+			'error': function(obj) {
+			    show_http_error(obj);
+			}
+		})
+    }
+
+    function remove_person(event){
+		id = $(this).closest('tr').attr('id');
+		$.ajax({
+            'url': '/persons/delete',
+            'data': {'id': id},
+            'success': function() {
+            	console.log('Removed OK');
+            	update()},
+			'error': function(obj) {
+                show_http_error(obj);
+            }
+        });
+    }
+
+    function show_persons(persons){
+        console.log(persons);
+        persons_table = $('#persons')
+        persons_table.find('.person-row').remove();
+        for (i in persons){
+            var tr = $('<tr></tr>');
+            tr.append($('<td></td>').text(persons[i].name).attr('col', 'name'));
+            tr.append($('<td></td>').text(persons[i].comment).attr('col', 'comment'));
+            tr.append($('<button type="button" class="btn btn-danger btn-xs rm-row"><span class="glyphicon glyphicon-trash"></span></button>')) //.attr('id', users[i].id))//.text('Удалить'))
+            tr.attr('id', persons[i].id).attr('class', 'person-row');
+		persons_table.append(tr)
+	    }
+
+        $(".rm-row").on('click', remove_person);
+
+}
+
+    function  get_winners(persons) {
+        console.log('We have winners')
+        $.when(
+			$.getJSON($SCRIPT_ROOT + '/get_winners', null)
+			)
+			.then(function(winners){
+			    console.log(winners);
+			    names = []
+			    for (i in winners){
+			        names.push('<b>' + winners[i].name + '</b>')
+                }
+                names = names.join(', ');
+                $('#winners').empty();
+                $('#winners').append('Winners are: ' + names + '.');
+
+                console.log(names)
+            });
+    }
+
+	$(document).ready( function() {
+		update();
+        $('#new_person').submit(add_person)
+        $(document).on("click", '#get_winners', get_winners);
+	});
+</script>
+
+<div class='jumbotron'>
+    <div class='container'>
+        <h1>Click to WIN!!!</h1>
+        <p><button id="get_winners" type="button" class="btn btn-primary btn-block">Click the button and check who wins!!!</button></p>
+        <p id="winners"></p>
+    </div>
+</div>
+<form id="new_person" action="/persons/add" method="post">
+    <input type='text' name="name" placeholder="Name"/>
+    <input type="text" name="comment" placeholder="Any comment or leave empty"/>
+    <input type="submit" class="btn btn-primary" value="Add"/>
+
+</form>
+<h1>Persons:</h1>
+<table id='persons' class='table table-striped table-hover table-condensed'>
+<thead>
+	<th field-name='log' class='col-md-8'>Name</th>
+	<th field-name='pwd' class='col-md-4'>Comment</th>
+	<th class='col-md-1'>Remove</th></thead>
+<tbody>
+</tbody>
+</table>
+<!--<button type="button" class="btn btn-secondary" id='add_person'>Add</button>-->
+<!--<button type="button" class="btn btn-primary" id='save_persons'>Save</button>-->
+{% endblock %}
