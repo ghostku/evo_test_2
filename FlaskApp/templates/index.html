@@ -3,8 +3,8 @@
 
 <script>
     function show_http_error(err_obj){
-        header = err_obj.statusText
-        text = err_obj.responseText;
+        var header = err_obj.statusText;
+        var text = err_obj.responseText;
         text = text.match(/<p>(.*)<\/p>/)[1];
         alert(header + '\n' + text);
     }
@@ -33,8 +33,8 @@
 		})
     }
 
-    function remove_person(event){
-		id = $(this).closest('tr').attr('id');
+    function remove_person(){
+		var id = $(this).closest('tr').attr('id');
 		$.ajax({
             'url': '/persons/delete',
             'data': {'id': id},
@@ -49,9 +49,9 @@
 
     function show_persons(persons){
         console.log(persons);
-        persons_table = $('#persons')
+        var persons_table = $('#persons');
         persons_table.find('.person-row').remove();
-        for (i in persons){
+        for (var i in persons){
             var tr = $('<tr></tr>');
             tr.append($('<td></td>').text(persons[i].name).attr('col', 'name'));
             tr.append($('<td></td>').text(persons[i].comment).attr('col', 'comment'));
@@ -64,20 +64,21 @@
 
 }
 
-    function  get_winners(persons) {
-        console.log('We have winners')
+    function  get_winners() {
+        console.log('We have winners');
         $.when(
 			$.getJSON($SCRIPT_ROOT + '/get_winners', null)
 			)
 			.then(function(winners){
 			    console.log(winners);
-			    names = []
-			    for (i in winners){
+			    var names = [];
+			    for (var i in winners){
 			        names.push('<b>' + winners[i].name + '</b>')
                 }
                 names = names.join(', ');
-                $('#winners').empty();
-                $('#winners').append('Winners are: ' + names + '.');
+                $('#winners')
+                    .empty()
+                    .append('Winners are: ' + names + '.');
 
                 console.log(names)
             });
@@ -85,7 +86,7 @@
 
 	$(document).ready( function() {
 		update();
-        $('#new_person').submit(add_person)
+        $('#new_person').submit(add_person);
         $(document).on("click", '#get_winners', get_winners);
 	});
 </script>
@@ -97,10 +98,10 @@
         <p id="winners"></p>
     </div>
 </div>
-<form id="new_person" action="/persons/add" method="post">
-    <input type='text' name="name" placeholder="Name"/>
-    <input type="text" name="comment" placeholder="Any comment or leave empty"/>
-    <input type="submit" class="btn btn-primary" value="Add"/>
+<form id="new_person" action="/persons/add" method="post" class="form-inline">
+    <input type='text' name="name" class="form-control" placeholder="Name"/>
+    <input type="text" name="comment" class="form-control" placeholder="Any comment or leave empty"/>
+    <input type="submit" class="btn btn-primary" value="Add Person"/>
 
 </form>
 <h1>Persons:</h1>
@@ -112,6 +113,4 @@
 <tbody>
 </tbody>
 </table>
-<!--<button type="button" class="btn btn-secondary" id='add_person'>Add</button>-->
-<!--<button type="button" class="btn btn-primary" id='save_persons'>Save</button>-->
 {% endblock %}
